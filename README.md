@@ -1,47 +1,41 @@
-# Recon_Suite
+# 🛡️ Recon_Suite
 
-## Description
-Recon_Suite is an intelligent, automated reconnaissance toolkit built for rapid and structured enumeration of network targets. It supports both standalone and Docker-based usage. Ideal for Penetration Testers, Red Teamers, and Security Analysts.
+![License](https://img.shields.io/badge/license-MIT-green) ![Build](https://img.shields.io/badge/build-passing-brightgreen) ![Docker](https://img.shields.io/badge/docker-ready-blue) ![Bash](https://img.shields.io/badge/language-bash-yellow)
 
-## Features
-- Target-aware scanning
-- Fast port discovery via `masscan`
-- Service enumeration with `nmap`
-- Web service analysis using `whatweb`, `nikto`, `dirb`
-- Generates Markdown + PDF reports with `pandoc`
-- Optional email delivery of results
-- Docker & standalone script compatible
+## 🔍 Overview
 
-## Requirements
-### Standalone
-Install the following:
-```
-sudo apt install -y nmap masscan jq xsltproc nikto dirb smbclient snmp git curl wget pandoc python3 whatweb mailutils
-```
+**Recon_Suite** is an intelligent, modular bash-based reconnaissance and enumeration tool designed to quickly identify and profile devices on a network. It supports various target types (web servers, routers, workstations, etc.) and adapts its scanning methods accordingly.
 
-### Docker
-Build and run:
+Recon_Suite can run in two modes:
+- 💻 **Standalone mode** (directly from your Linux/macOS machine)
+- 🐳 **Docker mode** (fully containerized for portability and consistency)
+
+---
+
+## ⚙️ Features
+
+- 📡 Smart target input: IP address, hostname, network (CIDR), or URL
+- 🔗 Toolchain integration:
+  - `nmap` (w/ JSON/XML output)
+  - `masscan` for ultra-fast port scanning
+  - `whatweb`, `nikto`, `dirb` for web servers
+  - `enum4linux`, `smbclient` for SMB shares
+  - `snmpwalk`, `snmpget` for SNMP
+- 📁 Structured output in a per-target folder
+- 📜 Converts output logs to:
+  - JSON (for SIEMs)
+  - DOCX/PDF (via `pandoc`)
+- ✉️ Optional email alerts on completion
+- 📊 Dashboard-ready logs
+- 🧠 Intelligent logic to scan based on device type
+- 🐞 Error-handling and dependency verification
+
+---
+
+## 🚀 Quick Start
+
+### 🔧 Standalone Use
+
 ```bash
-docker build -t recon_suite .
-docker run --rm -it recon_suite
-```
-
-## Output
-All results are saved in a `logs/TARGET__DATE/` directory with:
-- Nmap logs (normal, XML, grepable, HTML)
-- Masscan output
-- Web scan outputs
-- `report.md` and `report.pdf`
-
-## Email Notification
-Set `EMAIL_NOTIFICATIONS=true` and `EMAIL_RECIPIENT=you@example.com` at the top of the script to enable.
-
-## License
-MIT
-
-## Contributing
-PRs welcome. Report issues or feature requests via GitHub.
-
-## Author
-C04Ch_1337
-
+chmod +x Recon_Suite.sh
+./Recon_Suite.sh
