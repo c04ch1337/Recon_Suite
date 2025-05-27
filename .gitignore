@@ -1,8 +1,5 @@
-*.log
-*.xml
-*.json
-*.html
-__pycache__/
+logs/
+*.pdf
 *.zip
-*.tar
-*.tar.gz
+__pycache__/
+.DS_Store
