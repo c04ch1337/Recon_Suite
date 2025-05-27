@@ -39,3 +39,92 @@ Recon_Suite can run in two modes:
 ```bash
 chmod +x Recon_Suite.sh
 ./Recon_Suite.sh
+
+### 🐳 Docker Use
+## Build the Docker Image:
+docker build -t recon_suite .
+
+## Run the Container:
+docker run --rm -it recon_suite
+
+---
+
+## 📥 Input Prompts
+When the script starts, you'll be prompted to enter:
+
+#### IP Address or Network (CIDR)
+#### Hostname or URL
+
+---
+
+## 📦 Output Structure
+
+A directory is created per scan with this format:
+
+TARGET__YYYYMMDD_HHMMSS/
+├── masscan.txt
+├── nmap.xml
+├── nmap.json
+├── enum4linux.txt
+├── whatweb.txt
+├── nikto.txt
+├── smbclient.txt
+├── snmpwalk.txt
+├── combined_log.json
+├── report.docx
+└── report.pdf
+
+---
+
+## 📬 Email Notifications
+To receive email notifications, configure your mail setup (e.g., postfix or msmtp) and update the email in the script's config section.
+
+---
+
+## 📈 Optional Dashboard/Log Support
+
+* Exported .json logs are compatible with SIEM ingestion (ELK stack, Graylog, etc.)
+* Web scanner output integrates easily into threat modeling dashboards
+
+---
+
+## 📦 Dependencies
+The following tools must be installed for full functionality (handled automatically in Docker):
+
+    nmap, masscan, jq, xsltproc, nikto, dirb, smbclient
+
+    enum4linux-ng, snmp, git, curl, wget, pandoc, python3-pip, mailutils, whatweb
+
+Install them manually with:
+
+sudo apt update && sudo apt install -y \
+  nmap masscan jq xsltproc nikto dirb smbclient \
+  snmp snmp-mibs-downloader git curl wget pandoc \
+  python3-pip mailutils whatweb
+
+---
+
+## 🧪 Example Usage
+
+# Local
+./Recon_Suite.sh
+
+# Docker
+docker run --rm -it recon_suite
+
+---
+
+## 📜 License
+This project is licensed under the MIT License.
+
+---
+
+## 🤝 Contributing
+PRs and ideas welcome! Submit issues or suggestions via GitHub.
+
+---
+
+## 👨‍💻 Author
+Created with 🔧 by [YourNameHere]
+
+---
