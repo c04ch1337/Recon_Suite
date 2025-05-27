@@ -1,4 +1,5 @@
-### #!/bin/bash
+### Recon Suite ###
+#!/bin/bash
 
 # Recon_Suite.sh - Intelligent Host & Network Reconnaissance Tool
 # Author: C04CH_1337
