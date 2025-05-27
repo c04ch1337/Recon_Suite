@@ -43,5 +43,5 @@ MIT
 PRs welcome. Report issues or feature requests via GitHub.
 
 ## Author
-Jamey Milner
+C04Ch_1337
 
