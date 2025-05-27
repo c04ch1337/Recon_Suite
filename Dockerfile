@@ -1,25 +1,32 @@
+FROM ubuntu:22.04
 
-FROM kalilinux/kali-rolling
-
-RUN apt-get update && \
-    apt-get install -y \
+RUN apt-get update && apt-get install -y \
     nmap \
     masscan \
-    enum4linux \
-    nuclei \
     jq \
     xsltproc \
     nikto \
     dirb \
     smbclient \
+    enum4linux \
     snmp \
     git \
-    pandoc \
     curl \
-    unzip && \
-    apt-get clean
+    wget \
+    pandoc \
+    python3 \
+    python3-pip \
+    whatweb \
+    && apt-get clean
 
-COPY recon_suite.sh /recon_suite.sh
-RUN chmod +x /recon_suite.sh
+# Optional tools (if available)
+RUN go install -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest && \
+    go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
 
-ENTRYPOINT ["/recon_suite.sh"]
+ENV PATH="/root/go/bin:$PATH"
+
+WORKDIR /recon
+COPY Recon_Suite.sh /recon
+RUN chmod +x Recon_Suite.sh
+
+ENTRYPOINT ["./Recon_Suite.sh"]
