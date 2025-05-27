@@ -1,8 +1,6 @@
 FROM ubuntu:22.04
-
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install apt dependencies
 RUN apt-get update && apt-get install -y \
     nmap \
     masscan \
@@ -26,9 +24,8 @@ RUN git clone https://github.com/CiscoCXSecurity/enum4linux.git /opt/enum4linux 
     ln -s /opt/enum4linux/enum4linux.pl /usr/local/bin/enum4linux && \
     chmod +x /usr/local/bin/enum4linux
 
-# Copy the main recon script
+# Add script
 COPY Recon_Suite.sh /usr/local/bin/Recon_Suite.sh
 RUN chmod +x /usr/local/bin/Recon_Suite.sh
 
-# Set entrypoint
 ENTRYPOINT ["/usr/local/bin/Recon_Suite.sh"]
