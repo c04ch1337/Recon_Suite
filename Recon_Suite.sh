@@ -1,91 +1,100 @@
-### DELETE THIS LINE ###
-#!/bin/bash 
+# ===========================
+# Recon_Suite.sh
+# ===========================
 
-# ───────────────────────────────
-# Recon_Suite.sh – Network Recon Tool
-# Author: C04CH_1337
-# Updated: 2025-05-27
-# ───────────────────────────────
+#!/bin/bash
 
 set -e
 
-# ────── COLORS ──────
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+# ========== Global Vars ==========
+LOG_BASE_DIR="$(pwd)/logs"
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+EMAIL_NOTIFICATIONS=false
+EMAIL_RECIPIENT=""
 
-# ────── DEPENDENCY CHECK ──────
-REQUIRED_TOOLS=("nmap" "masscan" "jq" "xsltproc" "nikto" "dirb" "smbclient" "snmpwalk" "git" "curl" "wget" "pandoc" "python3" "python3-pip" "whatweb" "enum4linux")
-
-echo -e "${GREEN}🔍 Checking dependencies...${NC}"
-for tool in "${REQUIRED_TOOLS[@]}"; do
-    if ! command -v "$tool" &>/dev/null; then
-        echo -e "${YELLOW}⚠️  $tool not found. Please install it before running this script.${NC}"
-    fi
-done
-
-# ────── USER INPUT ──────
-read -rp "🎯 Enter Target (IP, CIDR, Hostname, or URL): " TARGET
-
-if [[ -z "$TARGET" ]]; then
-    echo -e "${RED}❌ No target provided. Exiting.${NC}"
-    exit 1
-fi
-
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-OUTPUT_DIR="${TARGET//[\/:]/_}__${TIMESTAMP}"
-mkdir -p "$OUTPUT_DIR"
-
-echo -e "${GREEN}📁 Output will be saved in $OUTPUT_DIR${NC}"
-
-# ────── MASSCAN ──────
-echo -e "\n🚀 Running masscan..."
-masscan -p1-65535 "$TARGET" --rate=10000 -oL "$OUTPUT_DIR/masscan.txt" 2>/dev/null || {
-    echo -e "${RED}❌ masscan failed.${NC}"
-    exit 1
+# ========== Functions ==========
+function banner() {
+  echo -e "\n\033[1;34m[*] Recon_Suite: Automated Network Recon Toolkit\033[0m"
 }
 
-if [ ! -s "$OUTPUT_DIR/masscan.txt" ]; then
-    echo -e "${YELLOW}⚠️ No open ports found or masscan failed. Exiting.${NC}"
+function check_dependencies() {
+  echo "[+] Checking dependencies..."
+  local dependencies=(nmap masscan jq xsltproc nikto dirb smbclient snmp git curl wget pandoc python3)
+  for dep in "${dependencies[@]}"; do
+    if ! command -v "$dep" &>/dev/null; then
+      echo "[-] $dep not found. Please install it before continuing."
+      exit 1
+    fi
+  done
+}
+
+function prompt_target() {
+  read -rp "Enter target IP/Network/Hostname/URL: " TARGET
+  TARGET_DIR="${LOG_BASE_DIR}/${TARGET//\//_}__${TIMESTAMP}"
+  mkdir -p "$TARGET_DIR"
+}
+
+function scan_ports() {
+  echo "[+] Running masscan for fast port discovery..."
+  masscan -p1-65535 "$TARGET" --rate=10000 -oL "$TARGET_DIR/masscan.txt" || true
+
+  if ! grep -q open "$TARGET_DIR/masscan.txt"; then
+    echo "⚠️ No open ports found. Exiting."
     exit 1
-fi
+  fi
 
-# ────── PORT EXTRACTION ──────
-PORTS=$(grep -Eo 'port [0-9]+' "$OUTPUT_DIR/masscan.txt" | awk '{print $2}' | sort -nu | paste -sd, -)
+  PORTS=$(grep -oP 'port \K[0-9]+' "$TARGET_DIR/masscan.txt" | paste -sd, -)
+  echo "[+] Ports identified: $PORTS"
+}
 
-echo -e "${GREEN}✅ Open Ports: $PORTS${NC}"
+function run_nmap() {
+  echo "[+] Running Nmap SYN scan..."
+  nmap -sS -p"$PORTS" -T4 -A "$TARGET" -oA "$TARGET_DIR/nmap_scan"
+  nmap -oX "$TARGET_DIR/nmap.xml" -p"$PORTS" "$TARGET"
+  xsltproc "$TARGET_DIR/nmap.xml" -o "$TARGET_DIR/nmap.html"
+  nmap -oG "$TARGET_DIR/nmap.gnmap" -p"$PORTS" "$TARGET"
+  nmap -p"$PORTS" -sV --script=banner "$TARGET" -oN "$TARGET_DIR/nmap_banner.txt"
+}
 
-# ────── NMAP ──────
-echo -e "\n🧠 Running Nmap with service and OS detection..."
-nmap -sS -sV -O -p"$PORTS" "$TARGET" -oA "$OUTPUT_DIR/nmap"
+function identify_and_scan_web() {
+  echo "[+] Checking for web services..."
+  if grep -E ':80|:443' "$TARGET_DIR/nmap.gnmap"; then
+    echo "[+] Web server detected. Running nikto, dirb, whatweb..."
+    whatweb "$TARGET" > "$TARGET_DIR/whatweb.txt" &
+    nikto -host "$TARGET" -output "$TARGET_DIR/nikto.txt" &
+    dirb "http://$TARGET" > "$TARGET_DIR/dirb.txt" &
+    wait
+  fi
+}
 
-# ────── CONVERT NMAP TO JSON ──────
-echo -e "\n📄 Converting Nmap XML to JSON..."
-xsltproc "$OUTPUT_DIR/nmap.xml" -o "$OUTPUT_DIR/nmap.html"
-python3 -m pip install xmltodict &>/dev/null || true
-python3 -c "
-import xmltodict, json
-with open('$OUTPUT_DIR/nmap.xml') as f:
-    obj = xmltodict.parse(f.read())
-with open('$OUTPUT_DIR/nmap.json', 'w') as out:
-    json.dump(obj, out, indent=2)
-"
+function generate_reports() {
+  echo "[+] Generating report..."
+  echo "Recon Report for $TARGET ($TIMESTAMP)" > "$TARGET_DIR/report.md"
+  for f in "$TARGET_DIR"/*.txt; do
+    echo -e "\n### $(basename "$f")\n" >> "$TARGET_DIR/report.md"
+    cat "$f" >> "$TARGET_DIR/report.md"
+  done
+  pandoc "$TARGET_DIR/report.md" -o "$TARGET_DIR/report.pdf"
+}
 
-# ────── SMB ENUM ──────
-if echo "$PORTS" | grep -q "445\|139"; then
-    echo -e "\n📦 Running enum4linux on SMB target..."
-    enum4linux "$TARGET" | tee "$OUTPUT_DIR/enum4linux.txt"
-fi
+function email_report() {
+  if [ "$EMAIL_NOTIFICATIONS" = true ]; then
+    echo "[+] Sending report to $EMAIL_RECIPIENT..."
+    echo "Recon Report for $TARGET" | mail -s "Recon Report: $TARGET" -A "$TARGET_DIR/report.pdf" "$EMAIL_RECIPIENT"
+  fi
+}
 
-# ────── WEB ENUM ──────
-if echo "$PORTS" | grep -q "80\|443\|8080"; then
-    echo -e "\n🌐 Detected web service. Running dirb and nikto..."
-    nikto -h "$TARGET" -o "$OUTPUT_DIR/nikto.txt"
-    whatweb "$TARGET" -v > "$OUTPUT_DIR/whatweb.txt"
-    dirb "http://$TARGET" -o "$OUTPUT_DIR/dirb_http.txt"
-    dirb "https://$TARGET" -o "$OUTPUT_DIR/dirb_https.txt"
-fi
+# ========== Main ==========
 
-# ────── COMPLETE ──────
-echo -e "\n${GREEN}✅ Recon Complete. Results stored in $OUTPUT_DIR${NC}"
+banner
+check_dependencies
+prompt_target
+scan_ports
+run_nmap
+identify_and_scan_web
+generate_reports
+email_report
+
+echo "[+] Recon complete. Output stored in: $TARGET_DIR"
+
+exit 0
