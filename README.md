@@ -1,24 +1,47 @@
-# 🛡️ Recon_Suite
+# Recon_Suite
 
-A fast, intelligent network and host recon toolchain built in Bash and deployable via Docker.
+## Description
+Recon_Suite is an intelligent, automated reconnaissance toolkit built for rapid and structured enumeration of network targets. It supports both standalone and Docker-based usage. Ideal for Penetration Testers, Red Teamers, and Security Analysts.
 
-## 📦 Features
+## Features
+- Target-aware scanning
+- Fast port discovery via `masscan`
+- Service enumeration with `nmap`
+- Web service analysis using `whatweb`, `nikto`, `dirb`
+- Generates Markdown + PDF reports with `pandoc`
+- Optional email delivery of results
+- Docker & standalone script compatible
 
-- Prompt-based recon on IP, Hostname, URL or CIDR
-- Fast port scanning with Masscan
-- Deep scanning with Nmap
-- JSON + HTML output for SIEM & human review
-- Web service detection and probing via:
-  - Nikto
-  - WhatWeb
-  - Dirb
-- SMB enumeration with enum4linux
-- Docker-ready or standalone use
+## Requirements
+### Standalone
+Install the following:
+```
+sudo apt install -y nmap masscan jq xsltproc nikto dirb smbclient snmp git curl wget pandoc python3 whatweb mailutils
+```
 
-## 🚀 Usage
-
-### 🔹 Standalone
-
+### Docker
+Build and run:
 ```bash
-chmod +x Recon_Suite.sh
-./Recon_Suite.sh
+docker build -t recon_suite .
+docker run --rm -it recon_suite
+```
+
+## Output
+All results are saved in a `logs/TARGET__DATE/` directory with:
+- Nmap logs (normal, XML, grepable, HTML)
+- Masscan output
+- Web scan outputs
+- `report.md` and `report.pdf`
+
+## Email Notification
+Set `EMAIL_NOTIFICATIONS=true` and `EMAIL_RECIPIENT=you@example.com` at the top of the script to enable.
+
+## License
+MIT
+
+## Contributing
+PRs welcome. Report issues or feature requests via GitHub.
+
+## Author
+Jamey Milner
+
