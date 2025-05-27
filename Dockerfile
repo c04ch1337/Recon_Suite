@@ -2,7 +2,7 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install dependencies
+# Install apt dependencies
 RUN apt-get update && apt-get install -y \
     nmap \
     masscan \
@@ -21,11 +21,14 @@ RUN apt-get update && apt-get install -y \
     whatweb \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copy the recon script into the container
-COPY Recon_Suite.sh /usr/local/bin/Recon_Suite.sh
+# Install enum4linux manually
+RUN git clone https://github.com/CiscoCXSecurity/enum4linux.git /opt/enum4linux && \
+    ln -s /opt/enum4linux/enum4linux.pl /usr/local/bin/enum4linux && \
+    chmod +x /usr/local/bin/enum4linux
 
-# Make the script executable
+# Copy the main recon script
+COPY Recon_Suite.sh /usr/local/bin/Recon_Suite.sh
 RUN chmod +x /usr/local/bin/Recon_Suite.sh
 
-# Set the script to run by default
+# Set entrypoint
 ENTRYPOINT ["/usr/local/bin/Recon_Suite.sh"]
