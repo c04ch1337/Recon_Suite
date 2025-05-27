@@ -14,8 +14,8 @@ A smart and fast recon tool that identifies hosts and services on a network and 
 
 ### Standalone
 ```bash
-chmod +x recon_smart.sh
-./recon_smart.sh
+chmod +x recon_suite.sh
+./recon_suite.sh
 ```
 
 ### Docker
