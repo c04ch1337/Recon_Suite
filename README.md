@@ -1,28 +1,26 @@
+# 🔎 Recon_Suite
 
-# Recon_Suite
+**Intelligent Host & Network Reconnaissance Tool**
 
-## Overview
-A smart and fast recon tool that identifies hosts and services on a network and performs deep reconnaissance based on OS and role.
+Recon_Suite automates and streamlines asset discovery, enumeration, and web recon across a network. Built for red teamers, pentesters, and network defenders.
 
-## Features
-- Masscan for fast port scanning
-- Nmap for detailed enumeration
-- Nuclei, Enum4linux, Nikto, Dirb for advanced recon
-- JSON and DOC outputs for SIEM and human analysis
+---
 
-## Usage
+## 💻 Features
 
-### Standalone
+- 🔍 Prompts for IP, Hostname, or URL
+- 🚀 Fast scanning using `masscan` & `nmap`
+- 🧠 Conditional logic (e.g., run `enum4linux` if SMB detected)
+- 🌐 Web recon with `nikto`, `dirb`, `nuclei`, `httpx`, `whatweb`
+- 📄 Output in JSON (for SIEMs) and DOCX (for reporting)
+- 🐳 Dockerized for plug-and-play usage
+
+---
+
+## 🚀 Usage
+
+### 🔧 Standalone (Linux)
+
 ```bash
-chmod +x recon_suite.sh
-./recon_suite.sh
-```
-
-### Docker
-```bash
-docker build -t recon_suite .
-docker run --rm -it --network=host recon_suite
-```
-
-## Output
-Creates a folder named after the target (with timestamp) containing all logs in multiple formats.
+chmod +x Recon_Suite.sh
+./Recon_Suite.sh
